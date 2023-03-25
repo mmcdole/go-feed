@@ -1,4 +1,4 @@
-package atom_test
+package atom
 
 import (
 	"bytes"
@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mmcdole/gofeed/atom"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,7 +27,7 @@ func TestParser_Parse(t *testing.T) {
 		f, _ := ioutil.ReadFile(ff)
 
 		// Parse actual feed
-		fp := &atom.Parser{}
+		fp := &Parser{}
 		actual, _ := fp.Parse(bytes.NewReader(f))
 
 		// Get json encoded expected feed result
@@ -36,7 +35,7 @@ func TestParser_Parse(t *testing.T) {
 		e, _ := ioutil.ReadFile(ef)
 
 		// Unmarshal expected feed
-		expected := &atom.Feed{}
+		expected := &Feed{}
 		json.Unmarshal(e, expected)
 
 		if assert.Equal(t, expected, actual, "Feed file %s.xml did not match expected output %s.json", name, name) {

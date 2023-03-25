@@ -1,15 +1,15 @@
-package gofeed
+package universal
 
 import (
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/mmcdole/gofeed/atom"
-	ext "github.com/mmcdole/gofeed/extensions"
-	"github.com/mmcdole/gofeed/internal/shared"
-	"github.com/mmcdole/gofeed/json"
-	"github.com/mmcdole/gofeed/rss"
+	"github.com/mmcdole/gofeed/v2/internal/shared"
+	ext "github.com/mmcdole/gofeed/v2/pkg/extensions"
+	"github.com/mmcdole/gofeed/v2/pkg/parsers/atom"
+	"github.com/mmcdole/gofeed/v2/pkg/parsers/json"
+	"github.com/mmcdole/gofeed/v2/pkg/parsers/rss"
 )
 
 // Translator converts a particular feed (atom.Feed or rss.Feed of json.Feed)
@@ -44,7 +44,6 @@ func (t *DefaultRSSTranslator) Translate(feed interface{}) (*Feed, error) {
 	result.UpdatedParsed = t.translateFeedUpdatedParsed(rss)
 	result.Published = t.translateFeedPublished(rss)
 	result.PublishedParsed = t.translateFeedPublishedParsed(rss)
-	result.Author = t.translateFeedAuthor(rss)
 	result.Authors = t.translateFeedAuthors(rss)
 	result.Language = t.translateFeedLanguage(rss)
 	result.Image = t.translateFeedImage(rss)
@@ -69,7 +68,6 @@ func (t *DefaultRSSTranslator) translateFeedItem(rssItem *rss.Item) (item *Item)
 	item.Links = t.translateItemLinks(rssItem)
 	item.Published = t.translateItemPublished(rssItem)
 	item.PublishedParsed = t.translateItemPublishedParsed(rssItem)
-	item.Author = t.translateItemAuthor(rssItem)
 	item.Authors = t.translateItemAuthors(rssItem)
 	item.GUID = t.translateItemGUID(rssItem)
 	item.Image = t.translateItemImage(rssItem)
@@ -503,7 +501,6 @@ func (t *DefaultAtomTranslator) Translate(feed interface{}) (*Feed, error) {
 	result.Links = t.translateFeedLinks(atom)
 	result.Updated = t.translateFeedUpdated(atom)
 	result.UpdatedParsed = t.translateFeedUpdatedParsed(atom)
-	result.Author = t.translateFeedAuthor(atom)
 	result.Authors = t.translateFeedAuthors(atom)
 	result.Language = t.translateFeedLanguage(atom)
 	result.Image = t.translateFeedImage(atom)
@@ -528,7 +525,6 @@ func (t *DefaultAtomTranslator) translateFeedItem(entry *atom.Entry) (item *Item
 	item.UpdatedParsed = t.translateItemUpdatedParsed(entry)
 	item.Published = t.translateItemPublished(entry)
 	item.PublishedParsed = t.translateItemPublishedParsed(entry)
-	item.Author = t.translateItemAuthor(entry)
 	item.Authors = t.translateItemAuthors(entry)
 	item.GUID = t.translateItemGUID(entry)
 	item.Image = t.translateItemImage(entry)
@@ -819,7 +815,6 @@ func (t *DefaultJSONTranslator) Translate(feed interface{}) (*Feed, error) {
 	result.Links = t.translateFeedLinks(json)
 	result.Description = t.translateFeedDescription(json)
 	result.Image = t.translateFeedImage(json)
-	result.Author = t.translateFeedAuthor(json)
 	result.Authors = t.translateFeedAuthors(json)
 	result.Language = t.translateFeedLanguage(json)
 	result.Items = t.translateFeedItems(json)
@@ -850,7 +845,6 @@ func (t *DefaultJSONTranslator) translateFeedItem(jsonItem *json.Item) (item *It
 	item.PublishedParsed = t.translateItemPublishedParsed(jsonItem)
 	item.Updated = t.translateItemUpdated(jsonItem)
 	item.UpdatedParsed = t.translateItemUpdatedParsed(jsonItem)
-	item.Author = t.translateItemAuthor(jsonItem)
 	item.Authors = t.translateItemAuthors(jsonItem)
 	item.Categories = t.translateItemCategories(jsonItem)
 	item.Enclosures = t.translateItemEnclosures(jsonItem)

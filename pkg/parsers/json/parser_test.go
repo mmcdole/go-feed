@@ -1,4 +1,4 @@
-package json_test
+package json
 
 import (
 	"bytes"
@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	jsonParser "github.com/mmcdole/gofeed/json"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +17,7 @@ import (
 // TODO: add tests for invalid
 
 func TestParser_Parse(t *testing.T) {
-	files, _ := filepath.Glob("../testdata/parser/json/*.json")
+	files, _ := filepath.Glob("../../../testdata/parser/json/*.json")
 	for _, f := range files {
 		base := filepath.Base(f)
 		name := strings.TrimSuffix(base, filepath.Ext(base))
@@ -30,19 +29,19 @@ func TestParser_Parse(t *testing.T) {
 		fmt.Printf("Testing %s... ", name)
 
 		// Get actual source feed
-		ff := fmt.Sprintf("../testdata/parser/json/%s.json", name)
+		ff := fmt.Sprintf("../../../testdata/parser/json/%s.json", name)
 		f, _ := ioutil.ReadFile(ff)
 
 		// Parse actual feed
-		fp := &jsonParser.Parser{}
+		fp := &Parser{}
 		actual, _ := fp.Parse(bytes.NewReader(f))
 
 		// Get json encoded expected feed result
-		ef := fmt.Sprintf("../testdata/parser/json/%s_expected.json", name)
+		ef := fmt.Sprintf("../../../testdata/parser/json/%s_expected.json", name)
 		e, _ := ioutil.ReadFile(ef)
 
 		// Unmarshal expected feed
-		expected := &jsonParser.Feed{}
+		expected := &Feed{}
 		json.Unmarshal(e, &expected)
 
 		if assert.Equal(t, expected, actual, "Feed file %s.json did not match expected output %s.json", name, name) {
@@ -59,12 +58,12 @@ func TestParser_ParseInvalidAndStruct(t *testing.T) {
 	fmt.Printf("Testing %s... ", name)
 
 	// Get actual source feed
-	ff := fmt.Sprintf("../testdata/parser/json/invalid/%s.json", name)
+	ff := fmt.Sprintf("../../../testdata/parser/json/invalid/%s.json", name)
 	fmt.Println(ff)
 	f, _ := ioutil.ReadFile(ff)
 
 	// Parse actual feed
-	fp := &jsonParser.Parser{}
+	fp := &Parser{}
 	_, err := fp.Parse(bytes.NewReader(f))
 	assert.Contains(t, err.Error(), "expect }")
 
@@ -72,7 +71,7 @@ func TestParser_ParseInvalidAndStruct(t *testing.T) {
 	fmt.Printf("Testing %s... ", name)
 
 	// Get actual source feed
-	ff = fmt.Sprintf("../testdata/parser/json/%s.json", name)
+	ff = fmt.Sprintf("../../../testdata/parser/json/%s.json", name)
 	fmt.Println(ff)
 	f, _ = ioutil.ReadFile(ff)
 

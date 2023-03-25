@@ -1,4 +1,4 @@
-package gofeed_test
+package universal
 
 import (
 	"bytes"
@@ -14,7 +14,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mmcdole/gofeed"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,11 +42,11 @@ func TestParser_Parse(t *testing.T) {
 		fmt.Printf("Testing %s... ", test.file)
 
 		// Get feed content
-		path := fmt.Sprintf("testdata/parser/universal/%s", test.file)
+		path := fmt.Sprintf("../../../testdata/parser/universal/%s", test.file)
 		f, _ := ioutil.ReadFile(path)
 
 		// Get actual value
-		fp := gofeed.NewParser()
+		fp := NewParser()
 		feed, err := fp.Parse(bytes.NewReader(f))
 
 		if test.hasError {
@@ -85,11 +84,11 @@ func TestParser_ParseString(t *testing.T) {
 		fmt.Printf("Testing %s... ", test.file)
 
 		// Get feed content
-		path := fmt.Sprintf("testdata/parser/universal/%s", test.file)
+		path := fmt.Sprintf("../../../testdata/parser/universal/%s", test.file)
 		f, _ := ioutil.ReadFile(path)
 
 		// Get actual value
-		fp := gofeed.NewParser()
+		fp := NewParser()
 		feed, err := fp.ParseString(string(f))
 
 		if test.hasError {
@@ -127,12 +126,12 @@ func TestParser_ParseURL_Success(t *testing.T) {
 		fmt.Printf("Testing %s... ", test.file)
 
 		// Get feed content
-		path := fmt.Sprintf("testdata/parser/universal/%s", test.file)
+		path := fmt.Sprintf("../../../testdata/parser/universal/%s", test.file)
 		f, _ := ioutil.ReadFile(path)
 
 		// Get actual value
 		server, client := mockServerResponse(200, string(f), 0)
-		fp := gofeed.NewParser()
+		fp := NewParser()
 		fp.Client = client
 		feed, err := fp.ParseURL(server.URL)
 
@@ -152,7 +151,7 @@ func TestParser_ParseURLWithContext(t *testing.T) {
 	server, client := mockServerResponse(404, "", 1*time.Minute)
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	fp := gofeed.NewParser()
+	fp := NewParser()
 	fp.Client = client
 	_, err := fp.ParseURLWithContext(server.URL, ctx)
 	assert.True(t, strings.Contains(err.Error(), ctx.Err().Error()))
@@ -160,12 +159,12 @@ func TestParser_ParseURLWithContext(t *testing.T) {
 
 func TestParser_ParseURL_Failure(t *testing.T) {
 	server, client := mockServerResponse(404, "", 0)
-	fp := gofeed.NewParser()
+	fp := NewParser()
 	fp.Client = client
 	feed, err := fp.ParseURL(server.URL)
 
 	assert.NotNil(t, err)
-	assert.IsType(t, gofeed.HTTPError{}, err)
+	assert.IsType(t, HTTPError{}, err)
 	assert.Nil(t, feed)
 }
 
@@ -173,8 +172,8 @@ func TestParser_ParseURLWithContextAndBasicAuth(t *testing.T) {
 	server, client := mockServerResponse(404, "", 1*time.Minute)
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	fp := gofeed.NewParser()
-	fp.AuthConfig = &gofeed.Auth{
+	fp := NewParser()
+	fp.AuthConfig = &Auth{
 		Username: "foo",
 		Password: "bar",
 	}
@@ -190,16 +189,16 @@ func TestParser_Concurrent(t *testing.T) {
 		"rss_feed_leading_spaces.xml", "rdf_feed.xml", "json10_feed.json",
 		"json11_feed.json"}
 
-	fp := gofeed.NewParser()
-	fp.AtomTranslator = &gofeed.DefaultAtomTranslator{}
-	fp.RSSTranslator = &gofeed.DefaultRSSTranslator{}
-	fp.JSONTranslator = &gofeed.DefaultJSONTranslator{}
+	fp := NewParser()
+	fp.AtomTranslator = &DefaultAtomTranslator{}
+	fp.RSSTranslator = &DefaultRSSTranslator{}
+	fp.JSONTranslator = &DefaultJSONTranslator{}
 	wg := sync.WaitGroup{}
 	for _, test := range feedTests {
 		fmt.Printf("\nTesting concurrently %s... ", test)
 
 		// Get feed content
-		path := fmt.Sprintf("testdata/parser/universal/%s", test)
+		path := fmt.Sprintf("../../../testdata/parser/universal/%s", test)
 		f, _ := ioutil.ReadFile(path)
 
 		wg.Add(1)
@@ -239,7 +238,7 @@ func ExampleParser_Parse() {
 <title>Sample Feed</title>
 </channel>
 </rss>`
-	fp := gofeed.NewParser()
+	fp := NewParser()
 	feed, err := fp.Parse(strings.NewReader(feedData))
 	if err != nil {
 		panic(err)
@@ -248,7 +247,7 @@ func ExampleParser_Parse() {
 }
 
 func ExampleParser_ParseURL() {
-	fp := gofeed.NewParser()
+	fp := NewParser()
 	feed, err := fp.ParseURL("http://feeds.twit.tv/twit.xml")
 	if err != nil {
 		panic(err)
@@ -262,7 +261,7 @@ func ExampleParser_ParseString() {
 <title>Sample Feed</title>
 </channel>
 </rss>`
-	fp := gofeed.NewParser()
+	fp := NewParser()
 	feed, err := fp.ParseString(feedData)
 	if err != nil {
 		panic(err)
@@ -271,8 +270,8 @@ func ExampleParser_ParseString() {
 }
 
 func ExampleParserWithBasicAuth_ParseURL() {
-	fp := gofeed.NewParser()
-	fp.AuthConfig = &gofeed.Auth{
+	fp := NewParser()
+	fp.AuthConfig = &Auth{
 		Username: "foo",
 		Password: "bar",
 	}

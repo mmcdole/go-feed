@@ -1,4 +1,4 @@
-package ext
+package extensions
 
 // ITunesFeedExtension is a set of extension
 // fields for RSS feeds.

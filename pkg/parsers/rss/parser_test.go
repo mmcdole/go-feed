@@ -1,4 +1,4 @@
-package ext_test
+package rss
 
 import (
 	"bytes"
@@ -9,12 +9,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mmcdole/gofeed"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestITunes_Extensions(t *testing.T) {
-	files, _ := filepath.Glob("../testdata/extensions/itunes/*.xml")
+func TestParser_Parse(t *testing.T) {
+	files, _ := filepath.Glob("../../../testdata/parser/rss/*.xml")
 	for _, f := range files {
 		base := filepath.Base(f)
 		name := strings.TrimSuffix(base, filepath.Ext(base))
@@ -22,19 +21,19 @@ func TestITunes_Extensions(t *testing.T) {
 		fmt.Printf("Testing %s... ", name)
 
 		// Get actual source feed
-		ff := fmt.Sprintf("../testdata/extensions/itunes/%s.xml", name)
+		ff := fmt.Sprintf("../../../testdata/parser/rss/%s.xml", name)
 		f, _ := ioutil.ReadFile(ff)
 
 		// Parse actual feed
-		fp := gofeed.NewParser()
+		fp := &Parser{}
 		actual, _ := fp.Parse(bytes.NewReader(f))
 
 		// Get json encoded expected feed result
-		ef := fmt.Sprintf("../testdata/extensions/itunes/%s.json", name)
+		ef := fmt.Sprintf("../../../testdata/parser/rss/%s.json", name)
 		e, _ := ioutil.ReadFile(ef)
 
 		// Unmarshal expected feed
-		expected := &gofeed.Feed{}
+		expected := &Feed{}
 		json.Unmarshal(e, &expected)
 
 		if assert.Equal(t, expected, actual, "Feed file %s.xml did not match expected output %s.json", name, name) {
@@ -44,3 +43,5 @@ func TestITunes_Extensions(t *testing.T) {
 		}
 	}
 }
+
+// TODO: Examples

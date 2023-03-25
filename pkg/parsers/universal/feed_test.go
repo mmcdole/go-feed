@@ -1,33 +1,31 @@
-package gofeed_test
+package universal
 
 import (
 	"sort"
 	"testing"
 	"time"
-
-	"github.com/mmcdole/gofeed"
 )
 
 func TestFeedSort(t *testing.T) {
-	oldestItem := &gofeed.Item{
+	oldestItem := &Item{
 		PublishedParsed: &[]time.Time{time.Unix(0, 0)}[0],
 	}
-	inbetweenItem := &gofeed.Item{
+	inbetweenItem := &Item{
 		PublishedParsed: &[]time.Time{time.Unix(1, 0)}[0],
 	}
-	newestItem := &gofeed.Item{
+	newestItem := &Item{
 		PublishedParsed: &[]time.Time{time.Unix(2, 0)}[0],
 	}
 
-	feed := gofeed.Feed{
-		Items: []*gofeed.Item{
+	feed := Feed{
+		Items: []*Item{
 			newestItem,
 			oldestItem,
 			inbetweenItem,
 		},
 	}
-	expected := gofeed.Feed{
-		Items: []*gofeed.Item{
+	expected := Feed{
+		Items: []*Item{
 			oldestItem,
 			inbetweenItem,
 			newestItem,

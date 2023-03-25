@@ -1,4 +1,4 @@
-package gofeed_test
+package universal
 
 import (
 	"bytes"
@@ -7,35 +7,34 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mmcdole/gofeed"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDetectFeedType(t *testing.T) {
 	var feedTypeTests = []struct {
 		file     string
-		expected gofeed.FeedType
+		expected FeedType
 	}{
-		{"atom03_feed.xml", gofeed.FeedTypeAtom},
-		{"atom10_feed.xml", gofeed.FeedTypeAtom},
-		{"rss_feed.xml", gofeed.FeedTypeRSS},
-		{"rss_feed_bom.xml", gofeed.FeedTypeRSS},
-		{"rss_feed_leading_spaces.xml", gofeed.FeedTypeRSS},
-		{"rdf_feed.xml", gofeed.FeedTypeRSS},
-		{"unknown_feed.xml", gofeed.FeedTypeUnknown},
-		{"empty_feed.xml", gofeed.FeedTypeUnknown},
-		{"json10_feed.json", gofeed.FeedTypeJSON},
+		{"atom03_feed.xml", FeedTypeAtom},
+		{"atom10_feed.xml", FeedTypeAtom},
+		{"rss_feed.xml", FeedTypeRSS},
+		{"rss_feed_bom.xml", FeedTypeRSS},
+		{"rss_feed_leading_spaces.xml", FeedTypeRSS},
+		{"rdf_feed.xml", FeedTypeRSS},
+		{"unknown_feed.xml", FeedTypeUnknown},
+		{"empty_feed.xml", FeedTypeUnknown},
+		{"json10_feed.json", FeedTypeJSON},
 	}
 
 	for _, test := range feedTypeTests {
 		fmt.Printf("Testing %s... ", test.file)
 
 		// Get feed content
-		path := fmt.Sprintf("testdata/parser/universal/%s", test.file)
+		path := fmt.Sprintf("../../../testdata/parser/universal/%s", test.file)
 		f, _ := ioutil.ReadFile(path)
 
 		// Get actual value
-		actual := gofeed.DetectFeedType(bytes.NewReader(f))
+		actual := DetectFeedType(bytes.NewReader(f))
 
 		if assert.Equal(t, actual, test.expected, "Feed file %s did not match expected type %d", test.file, test.expected) {
 			fmt.Printf("OK\n")
@@ -53,8 +52,8 @@ func ExampleDetectFeedType() {
 <title>Sample Feed</title>
 </channel>
 </rss>`
-	feedType := gofeed.DetectFeedType(strings.NewReader(feedData))
-	if feedType == gofeed.FeedTypeRSS {
+	feedType := DetectFeedType(strings.NewReader(feedData))
+	if feedType == FeedTypeRSS {
 		fmt.Println("Wow! This is an RSS feed!")
 	}
 }

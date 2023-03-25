@@ -1,4 +1,4 @@
-package gofeed
+package universal
 
 import (
 	"bytes"
@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/mmcdole/gofeed/atom"
-	"github.com/mmcdole/gofeed/json"
-	"github.com/mmcdole/gofeed/rss"
+	"github.com/mmcdole/gofeed/v2/pkg/parsers/atom"
+	"github.com/mmcdole/gofeed/v2/pkg/parsers/json"
+	"github.com/mmcdole/gofeed/v2/pkg/parsers/rss"
 )
 
 // ErrFeedTypeNotDetected is returned when the detection system can not figure
@@ -57,7 +57,7 @@ func NewParser() *Parser {
 		rp:        &rss.Parser{},
 		ap:        &atom.Parser{},
 		jp:        &json.Parser{},
-		UserAgent: "Gofeed/1.0",
+		UserAgent: "Gofeed/2.0",
 	}
 	return &fp
 }

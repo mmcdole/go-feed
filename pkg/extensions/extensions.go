@@ -1,4 +1,4 @@
-package ext
+package extensions
 
 // Extensions is the generic extension map for Feeds and Items.
 // The first map is for the element namespace prefix (e.g., itunes).

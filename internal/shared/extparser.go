@@ -3,8 +3,8 @@ package shared
 import (
 	"strings"
 
-	"github.com/mmcdole/gofeed/extensions"
-	"github.com/mmcdole/goxpp"
+	"github.com/mmcdole/gofeed/v2/pkg/extensions"
+	xpp "github.com/mmcdole/goxpp"
 )
 
 // IsExtension returns whether or not the current
@@ -22,7 +22,7 @@ func IsExtension(p *xpp.XMLPullParser) bool {
 // ParseExtension parses the current element of the
 // XMLPullParser as an extension element and updates
 // the extension map
-func ParseExtension(fe ext.Extensions, p *xpp.XMLPullParser) (ext.Extensions, error) {
+func ParseExtension(fe extensions.Extensions, p *xpp.XMLPullParser) (extensions.Extensions, error) {
 	prefix := prefixForNamespace(p.Space, p)
 
 	result, err := parseExtensionElement(p)
@@ -32,24 +32,24 @@ func ParseExtension(fe ext.Extensions, p *xpp.XMLPullParser) (ext.Extensions, er
 
 	// Ensure the extension prefix map exists
 	if _, ok := fe[prefix]; !ok {
-		fe[prefix] = map[string][]ext.Extension{}
+		fe[prefix] = map[string][]extensions.Extension{}
 	}
 	// Ensure the extension element slice exists
 	if _, ok := fe[prefix][p.Name]; !ok {
-		fe[prefix][p.Name] = []ext.Extension{}
+		fe[prefix][p.Name] = []extensions.Extension{}
 	}
 
 	fe[prefix][p.Name] = append(fe[prefix][p.Name], result)
 	return fe, nil
 }
 
-func parseExtensionElement(p *xpp.XMLPullParser) (e ext.Extension, err error) {
+func parseExtensionElement(p *xpp.XMLPullParser) (e extensions.Extension, err error) {
 	if err = p.Expect(xpp.StartTag, "*"); err != nil {
 		return e, err
 	}
 
 	e.Name = p.Name
-	e.Children = map[string][]ext.Extension{}
+	e.Children = map[string][]extensions.Extension{}
 	e.Attrs = map[string]string{}
 
 	for _, attr := range p.Attrs {
@@ -75,7 +75,7 @@ func parseExtensionElement(p *xpp.XMLPullParser) (e ext.Extension, err error) {
 			}
 
 			if _, ok := e.Children[child.Name]; !ok {
-				e.Children[child.Name] = []ext.Extension{}
+				e.Children[child.Name] = []extensions.Extension{}
 			}
 
 			e.Children[child.Name] = append(e.Children[child.Name], child)

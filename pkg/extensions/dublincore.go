@@ -1,4 +1,4 @@
-package ext
+package extensions
 
 // DublinCoreExtension represents a feed extension
 // for the Dublin Core specification.

@@ -7,10 +7,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mmcdole/gofeed"
-	"github.com/mmcdole/gofeed/atom"
-	"github.com/mmcdole/gofeed/rss"
 	"github.com/urfave/cli"
+
+	"github.com/mmcdole/gofeed/v2/pkg/parsers/atom"
+	"github.com/mmcdole/gofeed/v2/pkg/parsers/rss"
+	"github.com/mmcdole/gofeed/v2/pkg/parsers/universal"
 )
 
 func main() {
@@ -50,7 +51,7 @@ func main() {
 			p := atom.Parser{}
 			feed, err = p.Parse(strings.NewReader(fc))
 		} else {
-			p := gofeed.NewParser()
+			p := universal.NewParser()
 			feed, err = p.ParseString(fc)
 		}
 
