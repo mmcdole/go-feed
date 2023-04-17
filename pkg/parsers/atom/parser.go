@@ -68,13 +68,7 @@ func (ap *Parser) parseRoot(p *xpp.XMLPullParser) (*Feed, error) {
 
 			name := strings.ToLower(p.Name)
 
-			if shared.IsExtension(p) {
-				e, err := shared.ParseExtension(extensions, p)
-				if err != nil {
-					return nil, err
-				}
-				extensions = e
-			} else if name == "title" {
+			if name == "title" {
 				result, err := ap.parseAtomText(p)
 				if err != nil {
 					return nil, err
@@ -222,13 +216,7 @@ func (ap *Parser) parseEntry(p *xpp.XMLPullParser) (*Entry, error) {
 
 			name := strings.ToLower(p.Name)
 
-			if shared.IsExtension(p) {
-				e, err := shared.ParseExtension(extensions, p)
-				if err != nil {
-					return nil, err
-				}
-				extensions = e
-			} else if name == "title" {
+			if name == "title" {
 				result, err := ap.parseAtomText(p)
 				if err != nil {
 					return nil, err
@@ -314,10 +302,12 @@ func (ap *Parser) parseEntry(p *xpp.XMLPullParser) (*Entry, error) {
 				}
 				entry.Content = result
 			} else {
-				err := p.Skip()
+				// Handle unrecognized elements as extensions
+				ext, err := ext.ParseExtension(entry.Extensions, p)
 				if err != nil {
 					return nil, err
 				}
+				entry.Extensions = ext
 			}
 		}
 	}
@@ -377,13 +367,7 @@ func (ap *Parser) parseSource(p *xpp.XMLPullParser) (*Source, error) {
 
 			name := strings.ToLower(p.Name)
 
-			if shared.IsExtension(p) {
-				e, err := shared.ParseExtension(extensions, p)
-				if err != nil {
-					return nil, err
-				}
-				extensions = e
-			} else if name == "title" {
+			if name == "title" {
 				result, err := ap.parseAtomText(p)
 				if err != nil {
 					return nil, err
@@ -464,10 +448,12 @@ func (ap *Parser) parseSource(p *xpp.XMLPullParser) (*Source, error) {
 				}
 				categories = append(categories, result)
 			} else {
-				err := p.Skip()
+				// Handle unrecognized elements as extensions
+				ext, err := ext.ParseExtension(source.Extensions, p)
 				if err != nil {
 					return nil, err
 				}
+				source.Extensions = ext
 			}
 		}
 	}

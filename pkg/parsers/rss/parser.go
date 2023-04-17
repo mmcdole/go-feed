@@ -52,12 +52,6 @@ func (rp *Parser) parseRoot(p *xpp.XMLPullParser) (*Feed, error) {
 
 		if tok == xpp.StartTag {
 
-			// Skip any extensions found in the feed root.
-			if shared.IsExtension(p) {
-				p.Skip()
-				continue
-			}
-
 			name := strings.ToLower(p.Name)
 
 			if name == "channel" {
@@ -82,6 +76,7 @@ func (rp *Parser) parseRoot(p *xpp.XMLPullParser) (*Feed, error) {
 					return nil, err
 				}
 			} else {
+				// Skip unknown elements
 				p.Skip()
 			}
 		}
@@ -140,13 +135,7 @@ func (rp *Parser) parseChannel(p *xpp.XMLPullParser) (rss *Feed, err error) {
 
 			name := strings.ToLower(p.Name)
 
-			if shared.IsExtension(p) {
-				ext, err := shared.ParseExtension(extensions, p)
-				if err != nil {
-					return nil, err
-				}
-				extensions = ext
-			} else if name == "title" {
+			if name == "title" {
 				result, err := shared.ParseText(p)
 				if err != nil {
 					return nil, err
@@ -277,10 +266,19 @@ func (rp *Parser) parseChannel(p *xpp.XMLPullParser) (rss *Feed, err error) {
 					return nil, err
 				}
 				rss.TextInput = result
+			} else if name == "items" {
+				// TODO: Implement proper RDF Item Seq?
+				err := p.Skip()
+				if err != nil {
+					return nil, err
+				}
 			} else {
-				// Skip element as it isn't an extension and not
-				// part of the spec
-				p.Skip()
+				// Handle unrecognized elements as extensions
+				ext, err := ext.ParseExtension(rss.Extensions, p)
+				if err != nil {
+					return nil, err
+				}
+				rss.Extensions = ext
 			}
 		}
 	}
@@ -337,13 +335,7 @@ func (rp *Parser) parseItem(p *xpp.XMLPullParser) (item *Item, err error) {
 
 			name := strings.ToLower(p.Name)
 
-			if shared.IsExtension(p) {
-				ext, err := shared.ParseExtension(extensions, p)
-				if err != nil {
-					return nil, err
-				}
-				item.Extensions = ext
-			} else if name == "title" {
+			if name == "title" {
 				result, err := shared.ParseText(p)
 				if err != nil {
 					return nil, err
@@ -420,14 +412,12 @@ func (rp *Parser) parseItem(p *xpp.XMLPullParser) (item *Item, err error) {
 				}
 				categories = append(categories, result)
 			} else {
-				result, err := shared.ParseText(p)
+				// Handle unrecognized elements as extensions
+				ext, err := ext.ParseExtension(item.Extensions, p)
 				if err != nil {
-					continue
+					return nil, err
 				}
-				if item.Custom == nil {
-					item.Custom = make(map[string]string, 0)
-				}
-				item.Custom[p.Name] = result
+				item.Extensions = ext
 			}
 		}
 	}

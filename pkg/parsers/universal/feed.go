@@ -31,7 +31,6 @@ type Feed struct {
 	DublinCoreExt   *ext.DublinCoreExtension `json:"dcExt,omitempty"`
 	ITunesExt       *ext.ITunesFeedExtension `json:"itunesExt,omitempty"`
 	Extensions      ext.Extensions           `json:"extensions,omitempty"`
-	Custom          map[string]string        `json:"custom,omitempty"`
 	Items           []*Item                  `json:"items"`
 	FeedType        string                   `json:"feedType"`
 	FeedVersion     string                   `json:"feedVersion"`
@@ -63,7 +62,6 @@ type Item struct {
 	DublinCoreExt   *ext.DublinCoreExtension `json:"dcExt,omitempty"`
 	ITunesExt       *ext.ITunesItemExtension `json:"itunesExt,omitempty"`
 	Extensions      ext.Extensions           `json:"extensions,omitempty"`
-	Custom          map[string]string        `json:"custom,omitempty"`
 }
 
 // Person is an individual specified in a feed
