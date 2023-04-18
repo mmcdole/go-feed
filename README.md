@@ -15,11 +15,6 @@ For a seamless parsing experience across all supported formats, employ the unive
 - [Feed Parsing](#feed-parsing)
   - [Universal Parser (gofeed.Parser)](#universal-parser-gofeedparser)
   - [Dedicated Parsers](#dedicated-parsers)
-  - [Supported Input Types](#supported-input-types)
-    - [io.Reader](#ioreader)
-    - [String](#string)
-    - [URL](#url)
-  - [Supported Feed Types](#supported-feed-types)
 - [Advanced Usage](#advanced-usage)
   - [Universal Parser Mapping](#universal-parser-mapping)
   - [Extensions](#extensions)
@@ -53,29 +48,46 @@ import "github.com/mmcdole/gofeed/v2"
 
 To use the universal gofeed parser, create a new instance of the gofeed.Parser and use it's Parse functions to parse a feed from a URL, an io.Reader, or a string containing the feed XML or JSON content.
 
-Here's a simple example of using the gofeed.Parser to parse a feed from a URL:
+##### Parse a feed from an URL:
 
 ```go
-package main
-
-import (
-	"fmt"
-	"github.com/mmcdole/gofeed/v2"
-)
-
-func main() {
-	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL("https://example.com/feed.xml")
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
-		return
-	}
-
-	fmt.Printf("Feed title: %s\n", feed.Title)
-}
+fp := gofeed.NewParser()
+feed, _ := fp.ParseURL("http://feeds.twit.tv/twit.xml")
+fmt.Println(feed.Title)
 ```
-This example demonstrates how to create a new instance of the gofeed.Parser, parse a feed from a URL, and output the feed's title.
+
+##### Parse a feed from a string:
+
+```go
+feedData := `<rss version="2.0">
+<channel>
+<title>Sample Feed</title>
+</channel>
+</rss>`
+fp := gofeed.NewParser()
+feed, _ := fp.ParseString(feedData)
+fmt.Println(feed.Title)
+```
+
+##### Parse a feed from an io.Reader:
+
+```go
+file, _ := os.Open("/path/to/a/file.xml")
+defer file.Close()
+fp := gofeed.NewParser()
+feed, _ := fp.Parse(file)
+fmt.Println(feed.Title)
+```
+
+##### Parse a feed from an URL with a 60s timeout:
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+defer cancel()
+fp := gofeed.NewParser()
+feed, _ := fp.ParseURLWithContext("http://feeds.twit.tv/twit.xml", ctx)
+fmt.Println(feed.Title)
+```
 
 ## Feed Parsing
 
@@ -100,45 +112,40 @@ While the Universal Parser (`gofeed.Parser`) provides a convenient way to handle
 
 These dedicated parsers provide more granular control over the parsing process and enable you to work with the original structure of the specific feed type. Here's an overview of the dedicated parsers:
 
-#### RSS Parser
-
-The `rss.Parser` is designed to parse RSS feeds, handling various versions from RSS 0.90 to RSS 2.0. To use the `rss.Parser`, create a new instance and call the `Parse` method with the feed input:
+##### Parse a RSS feed into a `rss.Feed`
 
 ```go
-package main
-
-import (
-	"fmt"
-	"github.com/mmcdole/gofeed/v2/parsers/rss"
-)
-
-func main() {
-	rssParser := rss.NewParser()
-	rssFeedString := `
-<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
-  <channel>
-    <title>Example RSS Feed</title>
-    <link>https://www.example.com</link>
-    <description>An example RSS feed.</description>
-    <managingEditor>jane.doe@example.com (Jane Doe)</managingEditor>
-  </channel>
-</rss>
-`
-	rssFeed, err := rssParser.ParseString(rssFeedString)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
-		return
-	}
-
-	fmt.Printf("Managing Editor: %s\n", rssFeed.ManagingEditor)
-}
+feedData := `<rss version="2.0">
+<channel>
+<webMaster>example@site.com (Example Name)</webMaster>
+</channel>
+</rss>`
+fp := rss.NewParser()
+rssFeed, _ := fp.Parse(strings.NewReader(feedData))
+fmt.Println(rssFeed.WebMaster)
 ```
 
-Note that this example prints the managingEditor property, which is not available in the unified format used by the Universal Parser.
+##### Parse an Atom feed into a `atom.Feed`
 
-Supported Feed Versions:
+```go
+feedData := `<feed xmlns="http://www.w3.org/2005/Atom">
+<subtitle>Example Atom</subtitle>
+</feed>`
+fp := atom.NewParser()
+atomFeed, _ := fp.Parse(strings.NewReader(feedData))
+fmt.Println(atomFeed.Subtitle)
+```
+
+##### Parse a JSON feed into a `json.Feed`
+
+```go
+feedData := `{"version":"1.0", "home_page_url": "https://daringfireball.net"}`
+fp := json.NewParser()
+jsonFeed, _ := fp.Parse(strings.NewReader(feedData))
+fmt.Println(jsonFeed.HomePageURL)
+```
+
+##### Supported Feed Versions:
 * RSS 0.90
 * Netscape RSS 0.91
 * Userland RSS 0.91
@@ -147,159 +154,10 @@ Supported Feed Versions:
 * RSS 0.94
 * RSS 1.0
 * RSS 2.0
-
-#### Atom Parser
-
-The `atom.Parser` is tailored for parsing Atom feeds, supporting both Atom 0.3 and Atom 1.0. To use the `atom.Parser`, create a new instance and call the `Parse` method with the feed input:
-
-```go
-package main
-
-import (
-	"fmt"
-	"github.com/mmcdole/gofeed/v2/parsers/atom"
-)
-
-func main() {
-	atomParser := atom.NewParser()
-	atomFeedString := `
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Example Atom Feed</title>
-  <link href="https://www.example.com"/>
-  <updated>2021-12-15T05:00:00Z</updated>
-  <author>
-    <name>Jane Doe</name>
-    <email>jane.doe@example.com</email>
-  </author>
-  <id>urn:uuid:1234-5678-9012-3456</id>
-</feed>
-`
-	atomFeed, err := atomParser.ParseString(atomFeedString)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
-		return
-	}
-
-	fmt.Printf("Author: %s (%s)\n", atomFeed.Author.Name, atomFeed.Author.Email)
-}
-```
-
-Supported Feed Versions:
 * Atom 0.3
 * Atom 1.0
-
-#### JSON Feed Parser
-
-The `json.Parser` is designed for parsing JSON feeds, supporting JSON Feed 1.0 and 1.1. To use the `json.Parser`, create a new instance and call the `Parse` method with the feed input:
-
-```go
-package main
-
-import (
-	"fmt"
-	"github.com/mmcdole/gofeed/v2/parsers/json"
-)
-
-func main() {
-	jsonParser := json.NewParser()
-	jsonFeedString := `
-{
-  "version": "https://jsonfeed.org/version/1.1",
-  "title": "Example JSON Feed",
-  "home_page_url": "https://www.example.com",
-  "favicon": "https://www.example.com/favicon.ico",
-  "items": [
-    {
-      "id": "https://www.example.com/article",
-      "url": "https://www.example.com/article",
-      "title": "Example Article",
-      "content_text": "An example article in the JSON feed.",
-      "date_published": "2021-12-15T05:00:00Z"
-    }
-  ]
-}
-`
-	jsonFeed, err := jsonParser.ParseString(jsonFeedString)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
-		return
-	}
-
-	fmt.Printf("Favicon: %s\n", jsonFeed.Favicon)
-}
-```
-
-Supported Feed Types:
 * JSON 1.0
 * JSON 1.1
-
-### Supported Input Types
-
-The `gofeed.Parser`, `rss.Parser`, `atom.Parser`, and `json.Parser` all accept multiple input types for parsing feeds. You can provide the feed content as an `io.Reader`, a `string`, or a `URL`. The parsers include specific methods for each input type:
-
-#### io.Reader
-
-Use the `Parse` method when providing an `io.Reader` as the input source. This is useful when reading feed data from a file or a network stream. 
-
-```go
-import (
-	"os"
-	"github.com/mmcdole/gofeed/v2"
-)
-
-func main() {
-	file, err := os.Open("path/to/feed.xml")
-	if err != nil {
-		// Handle error
-	}
-	defer file.Close()
-
-	parser := gofeed.NewParser()
-	feed, err := parser.Parse(file)
-	if err != nil {
-		// Handle error
-	}
-}
-```
-
-#### String
-
-Use the `ParseString` method when providing a string as the input source. This is useful when you already have the feed content in a string variable.
-
-```go
-import "github.com/mmcdole/gofeed/v2"
-
-func main() {
-	feedContent := "<xml>...</xml>" // Replace with your feed content
-
-	parser := gofeed.NewParser()
-	feed, err := parser.ParseString(feedContent)
-	if err != nil {
-		// Handle error
-	}
-}
-```
-
-#### URL
-
-Use the `ParseURL` method when providing a URL as the input source. This is useful when you want the parser to fetch the feed content directly from a remote URL.
-
-```go
-import "github.com/mmcdole/gofeed/v2"
-
-func main() {
-	feedURL := "https://www.example.com/feed.xml"
-
-	parser := gofeed.NewParser()
-	feed, err := parser.ParseURL(feedURL)
-	if err != nil {
-		// Handle error
-	}
-}
-```
 
 ## Advanced Usage
 
@@ -422,38 +280,7 @@ fmt.Println(feed.Title)
 
 You can easily use the `rss. Parser` , `atom.Parser` or `json.Parser` directly if you have a usage scenario that requires it:
 
-##### Parse a RSS feed into a `rss. Feed`
 
-```go
-feedData := `<rss version="2.0">
-<channel>
-<webMaster>example@site.com (Example Name)</webMaster>
-</channel>
-</rss>`
-fp := rss.Parser{}
-rssFeed, _ := fp.Parse(strings.NewReader(feedData))
-fmt.Println(rssFeed.WebMaster)
-```
-
-##### Parse an Atom feed into a `atom. Feed`
-
-```go
-feedData := `<feed xmlns="http://www.w3.org/2005/Atom">
-<subtitle>Example Atom</subtitle>
-</feed>`
-fp := atom.Parser{}
-atomFeed, _ := fp.Parse(strings.NewReader(feedData))
-fmt.Println(atomFeed.Subtitle)
-```
-
-##### Parse a JSON feed into a `json. Feed`
-
-```go
-feedData := `{"version":"1.0", "home_page_url": "https://daringfireball.net"}`
-fp := json.Parser{}
-jsonFeed, _ := fp.Parse(strings.NewReader(feedData))
-fmt.Println(jsonFeed.HomePageURL)
-```
 
 ## Advanced Usage
 
