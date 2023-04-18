@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/mmcdole/gofeed/v2/internal/shared"
-	"github.com/mmcdole/gofeed/v2/pkg/parsers/json"
+	"github.com/mmcdole/gofeed/v2/parsers/json"
 )
 
 // DefaultJSONConverter converts an json.Feed struct
@@ -16,9 +16,9 @@ import (
 // for each of the fields in Feed.
 type DefaultJSONConverter struct{}
 
-// convert converts an JSON feed into the universal
+// Convert converts an JSON feed into the universal
 // feed type.
-func (t *DefaultJSONConverter) convert(feed interface{}) (*Feed, error) {
+func (t *DefaultJSONConverter) Convert(feed interface{}) (*Feed, error) {
 	json, found := feed.(*json.Feed)
 	if !found {
 		return nil, fmt.Errorf("Feed did not match expected type of *json.Feed")

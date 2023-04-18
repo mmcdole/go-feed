@@ -1,13 +1,13 @@
 package universal
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
-	"github.com/mmcdole/gofeed/v2/config"
+	ext "github.com/mmcdole/gofeed/v2/extensions"
 	"github.com/mmcdole/gofeed/v2/internal/shared"
-	"github.com/mmcdole/gofeed/v2/parsers/universal"
-	ext "github.com/mmcdole/gofeed/v2/pkg/extensions"
+	"github.com/mmcdole/gofeed/v2/parsers/rss"
 )
 
 // DefaultRSSConverter converts an rss.Feed struct
@@ -20,34 +20,38 @@ type DefaultRSSConverter struct{}
 
 // convert converts an RSS feed into the universal
 // feed type.
-func (t *DefaultRSSConverter) convert(feed *Feed, options config.ParseOptions) (*universal.Feed, error) {
-	result := &universal.Feed{}
-	result.Title = t.convertFeedTitle(feed)
-	result.Description = t.convertFeedDescription(feed)
-	result.Link = t.convertFeedLink(feed)
-	result.Links = t.convertFeedLinks(feed)
-	result.FeedLink = t.convertFeedFeedLink(feed)
-	result.Updated = t.convertFeedUpdated(feed)
-	result.UpdatedParsed = t.convertFeedUpdatedParsed(feed)
-	result.Published = t.convertFeedPublished(feed)
-	result.PublishedParsed = t.convertFeedPublishedParsed(feed)
-	result.Authors = t.convertFeedAuthors(feed)
-	result.Language = t.convertFeedLanguage(feed)
-	result.Image = t.convertFeedImage(feed)
-	result.Copyright = t.convertFeedCopyright(feed)
-	result.Generator = t.convertFeedGenerator(feed)
-	result.Categories = t.convertFeedCategories(feed)
-	result.Items = t.convertFeedItems(feed)
-	result.ITunesExt = feed.ITunesExt
-	result.DublinCoreExt = feed.DublinCoreExt
-	result.Extensions = feed.Extensions
-	result.FeedVersion = feed.Version
+func (t *DefaultRSSConverter) Convert(feed interface{}) (*Feed, error) {
+	rss, found := feed.(*rss.Feed)
+	if !found {
+		return nil, fmt.Errorf("Feed did not match expected type of *rss.Feed")
+	}
+	result := &Feed{}
+	result.Title = t.convertFeedTitle(rss)
+	result.Description = t.convertFeedDescription(rss)
+	result.Link = t.convertFeedLink(rss)
+	result.Links = t.convertFeedLinks(rss)
+	result.FeedLink = t.convertFeedFeedLink(rss)
+	result.Updated = t.convertFeedUpdated(rss)
+	result.UpdatedParsed = t.convertFeedUpdatedParsed(rss)
+	result.Published = t.convertFeedPublished(rss)
+	result.PublishedParsed = t.convertFeedPublishedParsed(rss)
+	result.Authors = t.convertFeedAuthors(rss)
+	result.Language = t.convertFeedLanguage(rss)
+	result.Image = t.convertFeedImage(rss)
+	result.Copyright = t.convertFeedCopyright(rss)
+	result.Generator = t.convertFeedGenerator(rss)
+	result.Categories = t.convertFeedCategories(rss)
+	result.Items = t.convertFeedItems(rss)
+	result.ITunesExt = rss.ITunesExt
+	result.DublinCoreExt = rss.DublinCoreExt
+	result.Extensions = rss.Extensions
+	result.FeedVersion = rss.Version
 	result.FeedType = "rss"
 	return result, nil
 }
 
-func (t *DefaultRSSConverter) convertFeedItem(rssItem *Item) (item *universal.Item) {
-	item = &universal.Item{}
+func (t *DefaultRSSConverter) convertFeedItem(rssItem *rss.Item) (item *Item) {
+	item = &Item{}
 	item.Title = t.convertItemTitle(rssItem)
 	item.Description = t.convertItemDescription(rssItem)
 	item.Content = t.convertItemContent(rssItem)
@@ -66,7 +70,7 @@ func (t *DefaultRSSConverter) convertFeedItem(rssItem *Item) (item *universal.It
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedTitle(rss *Feed) (title string) {
+func (t *DefaultRSSConverter) convertFeedTitle(rss *rss.Feed) (title string) {
 	if rss.Title != "" {
 		title = rss.Title
 	} else if rss.DublinCoreExt != nil && rss.DublinCoreExt.Title != nil {
@@ -75,11 +79,11 @@ func (t *DefaultRSSConverter) convertFeedTitle(rss *Feed) (title string) {
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedDescription(rss *Feed) (desc string) {
+func (t *DefaultRSSConverter) convertFeedDescription(rss *rss.Feed) (desc string) {
 	return rss.Description
 }
 
-func (t *DefaultRSSConverter) convertFeedLink(rss *Feed) (link string) {
+func (t *DefaultRSSConverter) convertFeedLink(rss *rss.Feed) (link string) {
 	if rss.Link != "" {
 		link = rss.Link
 	} else if rss.ITunesExt != nil && rss.ITunesExt.Subtitle != "" {
@@ -88,7 +92,7 @@ func (t *DefaultRSSConverter) convertFeedLink(rss *Feed) (link string) {
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedFeedLink(rss *Feed) (link string) {
+func (t *DefaultRSSConverter) convertFeedFeedLink(rss *rss.Feed) (link string) {
 	atomExtensions := t.extensionsForKeys([]string{"atom", "atom10", "atom03"}, rss.Extensions)
 	for _, ex := range atomExtensions {
 		if links, ok := ex["link"]; ok {
@@ -102,7 +106,7 @@ func (t *DefaultRSSConverter) convertFeedFeedLink(rss *Feed) (link string) {
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedLinks(rss *Feed) (links []string) {
+func (t *DefaultRSSConverter) convertFeedLinks(rss *rss.Feed) (links []string) {
 	if len(rss.Links) > 0 {
 		links = append(links, rss.Links...)
 	}
@@ -119,7 +123,7 @@ func (t *DefaultRSSConverter) convertFeedLinks(rss *Feed) (links []string) {
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedUpdated(rss *Feed) (updated string) {
+func (t *DefaultRSSConverter) convertFeedUpdated(rss *rss.Feed) (updated string) {
 	if rss.LastBuildDate != "" {
 		updated = rss.LastBuildDate
 	} else if rss.DublinCoreExt != nil && rss.DublinCoreExt.Date != nil {
@@ -128,7 +132,7 @@ func (t *DefaultRSSConverter) convertFeedUpdated(rss *Feed) (updated string) {
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedUpdatedParsed(rss *Feed) (updated *time.Time) {
+func (t *DefaultRSSConverter) convertFeedUpdatedParsed(rss *rss.Feed) (updated *time.Time) {
 	if rss.LastBuildDateParsed != nil {
 		updated = rss.LastBuildDateParsed
 	} else if rss.DublinCoreExt != nil && rss.DublinCoreExt.Date != nil {
@@ -141,15 +145,15 @@ func (t *DefaultRSSConverter) convertFeedUpdatedParsed(rss *Feed) (updated *time
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedPublished(rss *Feed) (published string) {
+func (t *DefaultRSSConverter) convertFeedPublished(rss *rss.Feed) (published string) {
 	return rss.PubDate
 }
 
-func (t *DefaultRSSConverter) convertFeedPublishedParsed(rss *Feed) (published *time.Time) {
+func (t *DefaultRSSConverter) convertFeedPublishedParsed(rss *rss.Feed) (published *time.Time) {
 	return rss.PubDateParsed
 }
 
-func (t *DefaultRSSConverter) convertFeedAuthor(rss *Feed) (author *Person) {
+func (t *DefaultRSSConverter) convertFeedAuthor(rss *rss.Feed) (author *Person) {
 	if rss.ManagingEditor != "" {
 		name, address := shared.ParseNameAddress(rss.ManagingEditor)
 		author = &Person{}
@@ -181,14 +185,14 @@ func (t *DefaultRSSConverter) convertFeedAuthor(rss *Feed) (author *Person) {
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedAuthors(rss *Feed) (authors []*Person) {
+func (t *DefaultRSSConverter) convertFeedAuthors(rss *rss.Feed) (authors []*Person) {
 	if author := t.convertFeedAuthor(rss); author != nil {
 		authors = []*Person{author}
 	}
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedLanguage(rss *Feed) (language string) {
+func (t *DefaultRSSConverter) convertFeedLanguage(rss *rss.Feed) (language string) {
 	if rss.Language != "" {
 		language = rss.Language
 	} else if rss.DublinCoreExt != nil && rss.DublinCoreExt.Language != nil {
@@ -197,7 +201,7 @@ func (t *DefaultRSSConverter) convertFeedLanguage(rss *Feed) (language string) {
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedImage(rss *Feed) (image *Image) {
+func (t *DefaultRSSConverter) convertFeedImage(rss *rss.Feed) (image *Image) {
 	if rss.Image != nil {
 		image = &Image{}
 		image.Title = rss.Image.Title
@@ -209,7 +213,7 @@ func (t *DefaultRSSConverter) convertFeedImage(rss *Feed) (image *Image) {
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedCopyright(rss *Feed) (rights string) {
+func (t *DefaultRSSConverter) convertFeedCopyright(rss *rss.Feed) (rights string) {
 	if rss.Copyright != "" {
 		rights = rss.Copyright
 	} else if rss.DublinCoreExt != nil && rss.DublinCoreExt.Rights != nil {
@@ -218,11 +222,11 @@ func (t *DefaultRSSConverter) convertFeedCopyright(rss *Feed) (rights string) {
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedGenerator(rss *Feed) (generator string) {
+func (t *DefaultRSSConverter) convertFeedGenerator(rss *rss.Feed) (generator string) {
 	return rss.Generator
 }
 
-func (t *DefaultRSSConverter) convertFeedCategories(rss *Feed) (categories []string) {
+func (t *DefaultRSSConverter) convertFeedCategories(rss *rss.Feed) (categories []string) {
 	cats := []string{}
 	if rss.Categories != nil {
 		for _, c := range rss.Categories {
@@ -259,7 +263,7 @@ func (t *DefaultRSSConverter) convertFeedCategories(rss *Feed) (categories []str
 	return
 }
 
-func (t *DefaultRSSConverter) convertFeedItems(rss *Feed) (items []*Item) {
+func (t *DefaultRSSConverter) convertFeedItems(rss *rss.Feed) (items []*Item) {
 	items = []*Item{}
 	for _, i := range rss.Items {
 		items = append(items, t.convertFeedItem(i))
@@ -267,7 +271,7 @@ func (t *DefaultRSSConverter) convertFeedItems(rss *Feed) (items []*Item) {
 	return
 }
 
-func (t *DefaultRSSConverter) convertItemTitle(rssItem *Item) (title string) {
+func (t *DefaultRSSConverter) convertItemTitle(rssItem *rss.Item) (title string) {
 	if rssItem.Title != "" {
 		title = rssItem.Title
 	} else if rssItem.DublinCoreExt != nil && rssItem.DublinCoreExt.Title != nil {
@@ -276,7 +280,7 @@ func (t *DefaultRSSConverter) convertItemTitle(rssItem *Item) (title string) {
 	return
 }
 
-func (t *DefaultRSSConverter) convertItemDescription(rssItem *Item) (desc string) {
+func (t *DefaultRSSConverter) convertItemDescription(rssItem *rss.Item) (desc string) {
 	if rssItem.Description != "" {
 		desc = rssItem.Description
 	} else if rssItem.DublinCoreExt != nil && rssItem.DublinCoreExt.Description != nil {
@@ -285,29 +289,29 @@ func (t *DefaultRSSConverter) convertItemDescription(rssItem *Item) (desc string
 	return
 }
 
-func (t *DefaultRSSConverter) convertItemContent(rssItem *Item) (content string) {
+func (t *DefaultRSSConverter) convertItemContent(rssItem *rss.Item) (content string) {
 	return rssItem.Content
 }
 
-func (t *DefaultRSSConverter) convertItemLink(rssItem *Item) (link string) {
+func (t *DefaultRSSConverter) convertItemLink(rssItem *rss.Item) (link string) {
 	return rssItem.Link
 }
 
-func (t *DefaultRSSConverter) convertItemLinks(rssItem *Item) (links []string) {
+func (t *DefaultRSSConverter) convertItemLinks(rssItem *rss.Item) (links []string) {
 	if len(rssItem.Links) > 0 {
 		links = append(links, rssItem.Links...)
 	}
 	return links
 }
 
-func (t *DefaultRSSConverter) convertItemUpdated(rssItem *Item) (updated string) {
+func (t *DefaultRSSConverter) convertItemUpdated(rssItem *rss.Item) (updated string) {
 	if rssItem.DublinCoreExt != nil && rssItem.DublinCoreExt.Date != nil {
 		updated = t.firstEntry(rssItem.DublinCoreExt.Date)
 	}
 	return updated
 }
 
-func (t *DefaultRSSConverter) convertItemUpdatedParsed(rssItem *Item) (updated *time.Time) {
+func (t *DefaultRSSConverter) convertItemUpdatedParsed(rssItem *rss.Item) (updated *time.Time) {
 	if rssItem.DublinCoreExt != nil && rssItem.DublinCoreExt.Date != nil {
 		updatedText := t.firstEntry(rssItem.DublinCoreExt.Date)
 		updatedDate, err := shared.ParseDate(updatedText)
@@ -318,7 +322,7 @@ func (t *DefaultRSSConverter) convertItemUpdatedParsed(rssItem *Item) (updated *
 	return
 }
 
-func (t *DefaultRSSConverter) convertItemPublished(rssItem *Item) (pubDate string) {
+func (t *DefaultRSSConverter) convertItemPublished(rssItem *rss.Item) (pubDate string) {
 	if rssItem.PubDate != "" {
 		return rssItem.PubDate
 	} else if rssItem.DublinCoreExt != nil && rssItem.DublinCoreExt.Date != nil {
@@ -327,7 +331,7 @@ func (t *DefaultRSSConverter) convertItemPublished(rssItem *Item) (pubDate strin
 	return
 }
 
-func (t *DefaultRSSConverter) convertItemPublishedParsed(rssItem *Item) (pubDate *time.Time) {
+func (t *DefaultRSSConverter) convertItemPublishedParsed(rssItem *rss.Item) (pubDate *time.Time) {
 	if rssItem.PubDateParsed != nil {
 		return rssItem.PubDateParsed
 	} else if rssItem.DublinCoreExt != nil && rssItem.DublinCoreExt.Date != nil {
@@ -340,7 +344,7 @@ func (t *DefaultRSSConverter) convertItemPublishedParsed(rssItem *Item) (pubDate
 	return
 }
 
-func (t *DefaultRSSConverter) convertItemAuthor(rssItem *Item) (author *Person) {
+func (t *DefaultRSSConverter) convertItemAuthor(rssItem *rss.Item) (author *Person) {
 	if rssItem.Author != "" {
 		name, address := shared.ParseNameAddress(rssItem.Author)
 		author = &Person{}
@@ -367,21 +371,21 @@ func (t *DefaultRSSConverter) convertItemAuthor(rssItem *Item) (author *Person) 
 	return
 }
 
-func (t *DefaultRSSConverter) convertItemAuthors(rssItem *Item) (authors []*Person) {
+func (t *DefaultRSSConverter) convertItemAuthors(rssItem *rss.Item) (authors []*Person) {
 	if author := t.convertItemAuthor(rssItem); author != nil {
 		authors = []*Person{author}
 	}
 	return
 }
 
-func (t *DefaultRSSConverter) convertItemGUID(rssItem *Item) (guid string) {
+func (t *DefaultRSSConverter) convertItemGUID(rssItem *rss.Item) (guid string) {
 	if rssItem.GUID != nil {
 		guid = rssItem.GUID.Value
 	}
 	return
 }
 
-func (t *DefaultRSSConverter) convertItemImage(rssItem *Item) (image *Image) {
+func (t *DefaultRSSConverter) convertItemImage(rssItem *rss.Item) (image *Image) {
 	if rssItem.ITunesExt != nil && rssItem.ITunesExt.Image != "" {
 		image = &Image{}
 		image.URL = rssItem.ITunesExt.Image
@@ -389,7 +393,7 @@ func (t *DefaultRSSConverter) convertItemImage(rssItem *Item) (image *Image) {
 	return
 }
 
-func (t *DefaultRSSConverter) convertItemCategories(rssItem *Item) (categories []string) {
+func (t *DefaultRSSConverter) convertItemCategories(rssItem *rss.Item) (categories []string) {
 	cats := []string{}
 	if rssItem.Categories != nil {
 		for _, c := range rssItem.Categories {
@@ -417,7 +421,7 @@ func (t *DefaultRSSConverter) convertItemCategories(rssItem *Item) (categories [
 	return
 }
 
-func (t *DefaultRSSConverter) convertItemEnclosures(rssItem *Item) (enclosures []*Enclosure) {
+func (t *DefaultRSSConverter) convertItemEnclosures(rssItem *rss.Item) (enclosures []*Enclosure) {
 	if rssItem.Enclosures != nil && len(rssItem.Enclosures) > 0 {
 		// Accumulate the enclosures
 		for _, enc := range rssItem.Enclosures {

@@ -2,6 +2,7 @@ package universal
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"strings"
 
@@ -15,6 +16,10 @@ import (
 type Converter interface {
 	Convert(feed interface{}) (*Feed, error)
 }
+
+// ErrFeedTypeNotDetected is returned when the detection system can not figure
+// out the Feed format
+var ErrFeedTypeNotDetected = errors.New("failed to detect feed type")
 
 // Parser is a universal feed parser that can parse Atom, RSS, and JSON feeds.
 type Parser struct {
