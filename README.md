@@ -238,19 +238,68 @@ Supported Feed Types:
 
 ### Supported Input Types
 
-### Supported Feed Types
-
-
-* Atom 0.3
-* Atom 1.0
-
-
+The `gofeed.Parser`, `rss.Parser`, `atom.Parser`, and `json.Parser` all accept multiple input types for parsing feeds. You can provide the feed content as an `io.Reader`, a `string`, or a `URL`. The parsers include specific methods for each input type:
 
 #### io.Reader
 
+Use the `Parse` method when providing an `io.Reader` as the input source. This is useful when reading feed data from a file or a network stream. 
+
+```go
+import (
+	"os"
+	"github.com/mmcdole/gofeed/v2"
+)
+
+func main() {
+	file, err := os.Open("path/to/feed.xml")
+	if err != nil {
+		// Handle error
+	}
+	defer file.Close()
+
+	parser := gofeed.NewParser()
+	feed, err := parser.Parse(file)
+	if err != nil {
+		// Handle error
+	}
+}
+```
+
 #### String
 
+Use the `ParseString` method when providing a string as the input source. This is useful when you already have the feed content in a string variable.
+
+```go
+import "github.com/mmcdole/gofeed/v2"
+
+func main() {
+	feedContent := "<xml>...</xml>" // Replace with your feed content
+
+	parser := gofeed.NewParser()
+	feed, err := parser.ParseString(feedContent)
+	if err != nil {
+		// Handle error
+	}
+}
+```
+
 #### URL
+
+Use the `ParseURL` method when providing a URL as the input source. This is useful when you want the parser to fetch the feed content directly from a remote URL.
+
+```go
+import "github.com/mmcdole/gofeed/v2"
+
+func main() {
+	feedURL := "https://www.example.com/feed.xml"
+
+	parser := gofeed.NewParser()
+	feed, err := parser.ParseURL(feedURL)
+	if err != nil {
+		// Handle error
+	}
+}
+```
 
 ## Advanced Usage
 
