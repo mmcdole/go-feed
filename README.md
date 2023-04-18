@@ -1,26 +1,144 @@
 # gofeed
 
-[![Build Status](https://travis-ci.org/mmcdole/gofeed.svg?branch=master)](https://travis-ci.org/mmcdole/gofeed) [![Coverage Status](https://coveralls.io/repos/github/mmcdole/gofeed/badge.svg?branch=master)](https://coveralls.io/github/mmcdole/gofeed?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/mmcdole/gofeed)](https://goreportcard.com/report/github.com/mmcdole/gofeed) [![](https://godoc.org/github.com/mmcdole/gofeed?status.svg)](http://godoc.org/github.com/mmcdole/gofeed) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
+[![Coverage Status](https://coveralls.io/repos/github/mmcdole/gofeed/badge.svg?branch=master)](https://coveralls.io/github/mmcdole/gofeed?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/mmcdole/gofeed)](https://goreportcard.com/report/github.com/mmcdole/gofeed) [![](https://godoc.org/github.com/mmcdole/gofeed?status.svg)](http://godoc.org/github.com/mmcdole/gofeed) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 
-The `gofeed` library is a robust feed parser that supports parsing both [RSS](https://en.wikipedia.org/wiki/RSS), [Atom](<https://en.wikipedia.org/wiki/Atom_(standard)>) and [JSON](https://jsonfeed.org/version/1) feeds. The library provides a universal `gofeed.Parser` that will parse and convert all feed types into a hybrid `gofeed.Feed` model. You also have the option of utilizing the feed specific `atom.Parser` or `rss.Parser` or `json.Parser` parsers which generate `atom. Feed` , `rss.Feed` and `json.Feed` respectively.
+Introducing the `gofeed` library, a versatile feed parser designed to accommodate a wide range of popular feed formats, including [RSS](https://en.wikipedia.org/wiki/RSS), [Atom](https://en.wikipedia.org/wiki/Atom_(standard)), and [JSON Feed](https://jsonfeed.org/version/1). With a focus on flexibility and ease of use, this library streamlines the process of parsing various feeds into a unified format.
+
+For a seamless parsing experience across all supported formats, employ the universal `gofeed.Parser`. Alternatively, if your needs are tailored to a specific feed format, make use of the dedicated parsers: `rss.Parser`, `atom.Parser`, and `json.Parser`. These specialized parsers ensure optimal performance and accuracy when working with a particular feed type.
+
 
 ## Table of Contents
 
-* [Features](#features)
-* [Overview](#overview)
-* [Basic Usage](#basic-usage)
-* [Advanced Usage](#advanced-usage)
-* [Extensions](#extensions)
-* [Invalid Feeds](#invalid-feeds)
-* [Default Mappings](#default-mappings)
-* [Dependencies](#dependencies)
-* [License](#license)
-* [Credits](#credits)
+- [Getting Started](#getting-started)
+  - [Installation](#installation)
+  - [Basic Usage](#basic-usage)
+- [Feed Parsing](#feed-parsing)
+  - [Universal Parser (gofeed.Parser)](#universal-parser-gofeedparser)
+  - [Dedicated Parsers](#dedicated-parsers)
+  - [Supported Input Types](#supported-input-types)
+    - [io.Reader](#ioreader)
+    - [String](#string)
+    - [URL](#url)
+  - [Supported Feed Types](#supported-feed-types)
+- [Advanced Usage](#advanced-usage)
+  - [Universal Parser Mapping](#universal-parser-mapping)
+  - [Extensions](#extensions)
+  - [Parsing Strictness](#parsing-strictness)
+- [Contributing](#contributing)
+  - [Reporting Issues](#reporting-issues)
+  - [Submitting Pull Requests](#submitting-pull-requests)
+  - [Development Guidelines](#development-guidelines)
+  - [Credits](#credits)
+- [License](#license)
 
-## Features
+## Getting Started
 
-#### Supported feed types:
+### Installation
 
+To install the `gofeed` library, use the `go get` command:
+
+```bash
+go get github.com/mmcdole/gofeed/v2
+```
+
+This will download and install the latest version of the gofeed library. Make sure to add the /v2 suffix to the import path to ensure you are using the latest version.
+
+### Basic Usage
+
+Once you have successfully installed the gofeed library, you can import it into your Go project by adding the following import statement:
+
+```go
+import "github.com/mmcdole/gofeed/v2"
+```
+
+To use the universal gofeed parser, create a new instance of the gofeed.Parser and use it's Parse functions to parse a feed from a URL, an io.Reader, or a string containing the feed XML or JSON content.
+
+Here's a simple example of using the gofeed.Parser to parse a feed from a URL:
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/mmcdole/gofeed/v2"
+)
+
+func main() {
+	fp := gofeed.NewParser()
+	feed, err := fp.ParseURL("https://example.com/feed.xml")
+
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+
+	fmt.Printf("Feed title: %s\n", feed.Title)
+}
+```
+This example demonstrates how to create a new instance of the gofeed.Parser, parse a feed from a URL, and output the feed's title.
+
+## Feed Parsing
+
+### Universal Parser (gofeed.Parser)
+
+![universal_parser](https://user-images.githubusercontent.com/3767096/232666610-96b8a2c7-18b5-47ad-aec4-050ff695cdc2.png)
+
+The Universal Parser, `gofeed.Parser`, is designed to automatically detect the feed type, parse the content using the appropriate feed-specific parser, and then convert the parsed data into a unified format.
+
+The process can be summarized in the following steps:
+
+1. **Feed type detection**: The Universal Parser analyzes the provided feed content and identifies its type (RSS, Atom, or JSON) based on the structure and elements present.
+2. **Feed specific parsing**: Once the feed type is determined, the corresponding feed-specific parser (`rss.Parser`, `atom.Parser`, or `json.Parser`) is used to parse the content.
+3. **Feed Conversion**: After parsing, the data is converted into a common format, making it easy to work with, regardless of the original feed type.
+
+This process ensures that the Universal Parser can handle a wide variety of feed types and present the data in a consistent and unified format, simplifying the process for developers.
+
+
+### Dedicated Parsers
+
+While the Universal Parser (`gofeed.Parser`) provides a convenient way to handle multiple feed types and convert them into a unified format, there might be cases where you want to work with a specific feed type directly. The `gofeed` library offers dedicated parsers for each supported feed type: RSS, Atom, and JSON.
+
+These dedicated parsers provide more granular control over the parsing process and enable you to work with the original structure of the specific feed type. Here's an overview of the dedicated parsers:
+
+#### RSS Parser
+
+The `rss.Parser` is designed to parse RSS feeds, handling various versions from RSS 0.90 to RSS 2.0. To use the `rss.Parser`, create a new instance and call the `Parse` method with the feed input:
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/mmcdole/gofeed/v2/parsers/rss"
+)
+
+func main() {
+	rssParser := rss.NewParser()
+	rssFeedString := `
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Example RSS Feed</title>
+    <link>https://www.example.com</link>
+    <description>An example RSS feed.</description>
+    <managingEditor>jane.doe@example.com (Jane Doe)</managingEditor>
+  </channel>
+</rss>
+`
+	rssFeed, err := rssParser.ParseString(rssFeedString)
+
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+
+	fmt.Printf("Managing Editor: %s\n", rssFeed.ManagingEditor)
+}
+```
+
+Note that this example prints the managingEditor property, which is not available in the unified format used by the Universal Parser.
+
+Supported Feed Versions:
 * RSS 0.90
 * Netscape RSS 0.91
 * Userland RSS 0.91
@@ -29,10 +147,138 @@ The `gofeed` library is a robust feed parser that supports parsing both [RSS](ht
 * RSS 0.94
 * RSS 1.0
 * RSS 2.0
+
+#### Atom Parser
+
+The `atom.Parser` is tailored for parsing Atom feeds, supporting both Atom 0.3 and Atom 1.0. To use the `atom.Parser`, create a new instance and call the `Parse` method with the feed input:
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/mmcdole/gofeed/v2/parsers/atom"
+)
+
+func main() {
+	atomParser := atom.NewParser()
+	atomFeedString := `
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Example Atom Feed</title>
+  <link href="https://www.example.com"/>
+  <updated>2021-12-15T05:00:00Z</updated>
+  <author>
+    <name>Jane Doe</name>
+    <email>jane.doe@example.com</email>
+  </author>
+  <id>urn:uuid:1234-5678-9012-3456</id>
+</feed>
+`
+	atomFeed, err := atomParser.ParseString(atomFeedString)
+
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+
+	fmt.Printf("Author: %s (%s)\n", atomFeed.Author.Name, atomFeed.Author.Email)
+}
+```
+
+Supported Feed Versions:
 * Atom 0.3
 * Atom 1.0
+
+#### JSON Feed Parser
+
+The `json.Parser` is designed for parsing JSON feeds, supporting JSON Feed 1.0 and 1.1. To use the `json.Parser`, create a new instance and call the `Parse` method with the feed input:
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/mmcdole/gofeed/v2/parsers/json"
+)
+
+func main() {
+	jsonParser := json.NewParser()
+	jsonFeedString := `
+{
+  "version": "https://jsonfeed.org/version/1.1",
+  "title": "Example JSON Feed",
+  "home_page_url": "https://www.example.com",
+  "favicon": "https://www.example.com/favicon.ico",
+  "items": [
+    {
+      "id": "https://www.example.com/article",
+      "url": "https://www.example.com/article",
+      "title": "Example Article",
+      "content_text": "An example article in the JSON feed.",
+      "date_published": "2021-12-15T05:00:00Z"
+    }
+  ]
+}
+`
+	jsonFeed, err := jsonParser.ParseString(jsonFeedString)
+
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+
+	fmt.Printf("Favicon: %s\n", jsonFeed.Favicon)
+}
+```
+
+Supported Feed Types:
 * JSON 1.0
 * JSON 1.1
+
+### Supported Input Types
+
+### Supported Feed Types
+
+
+* Atom 0.3
+* Atom 1.0
+
+
+
+#### io.Reader
+
+#### String
+
+#### URL
+
+## Advanced Usage
+
+### Universal Parser Mapping
+
+### Extensions
+
+### Parsing Strictness
+
+## Contributing
+
+### Reporting Issues
+
+### Submitting Pull Requests
+
+### Development Guidelines
+
+### Credits
+
+## License
+
+
+## License
+
+
+## Features
+
+#### Supported feed types:
 
 #### Extension Support
 
