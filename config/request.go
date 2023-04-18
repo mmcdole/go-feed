@@ -49,7 +49,7 @@ type RequestOptions struct {
 func NewRequestOptions() RequestOptions {
 	return RequestOptions{
 		Timeout:         time.Duration(29) * time.Second,
-		UserAgent:       "gofeed/1.0.0",
+		UserAgent:       "gofeed/2.0.0",
 		IfNoneMatch:     "",
 		IfModifiedSince: "",
 		Context:         context.Background(),
