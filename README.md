@@ -19,11 +19,7 @@ For a seamless parsing experience across all supported formats, employ the unive
   - [Universal Parser Mapping](#universal-parser-mapping)
   - [Extensions](#extensions)
   - [Parsing Strictness](#parsing-strictness)
-- [Contributing](#contributing)
-  - [Reporting Issues](#reporting-issues)
-  - [Submitting Pull Requests](#submitting-pull-requests)
-  - [Development Guidelines](#development-guidelines)
-  - [Credits](#credits)
+- [Credits](#credits)
 - [License](#license)
 
 ## Getting Started
@@ -167,21 +163,18 @@ fmt.Println(jsonFeed.HomePageURL)
 
 ### Parsing Strictness
 
-## Contributing
+## Credits
 
-### Reporting Issues
-
-### Submitting Pull Requests
-
-### Development Guidelines
-
-### Credits
-
-## License
-
+* [cristoper](https://github.com/cristoper) for his work on implementing xml:base relative URI handling.
+* [Mark Pilgrim](https://en.wikipedia.org/wiki/Mark_Pilgrim) and [Kurt McKee](http://kurtmckee.org) for their work on the excellent [Universal Feed Parser](https://github.com/kurtmckee/feedparser) Python library. This library was the inspiration for the `gofeed` library.
+* [Dan MacTough](http://blog.mact.me) for his work on [node-feedparser](https://github.com/danmactough/node-feedparser). It provided inspiration for the set of fields that should be covered in the hybrid `gofeed.Feed` model.
+* [Matt Jibson](https://mattjibson.com/) for his date parsing function in the [goread](https://github.com/mjibson/goread) project.
+* [Jim Teeuwen](https://github.com/jteeuwen) for his method of representing arbitrary feed extensions in the [go-pkg-rss](https://github.com/jteeuwen/go-pkg-rss) library.
+* [Sudhanshu Raheja](https://revolt.ist) for supporting JSON Feed parser
 
 ## License
 
+This project is licensed under the [MIT License](https://raw.githubusercontent.com/mmcdole/gofeed/master/LICENSE)
 
 ## Features
 
@@ -410,13 +403,4 @@ The `DefaultRSSTranslator` , the `DefaultAtomTranslator` and the `DefaultJSONTra
 
 ## License
 
-This project is licensed under the [MIT License](https://raw.githubusercontent.com/mmcdole/gofeed/master/LICENSE)
 
-## Credits
-
-* [cristoper](https://github.com/cristoper) for his work on implementing xml:base relative URI handling.
-* [Mark Pilgrim](https://en.wikipedia.org/wiki/Mark_Pilgrim) and [Kurt McKee](http://kurtmckee.org) for their work on the excellent [Universal Feed Parser](https://github.com/kurtmckee/feedparser) Python library. This library was the inspiration for the `gofeed` library.
-* [Dan MacTough](http://blog.mact.me) for his work on [node-feedparser](https://github.com/danmactough/node-feedparser). It provided inspiration for the set of fields that should be covered in the hybrid `gofeed.Feed` model.
-* [Matt Jibson](https://mattjibson.com/) for his date parsing function in the [goread](https://github.com/mjibson/goread) project.
-* [Jim Teeuwen](https://github.com/jteeuwen) for his method of representing arbitrary feed extensions in the [go-pkg-rss](https://github.com/jteeuwen/go-pkg-rss) library.
-* [Sudhanshu Raheja](https://revolt.ist) for supporting JSON Feed parser
