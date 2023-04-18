@@ -9,9 +9,9 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/mmcdole/gofeed/v2/pkg/parsers/atom"
-	"github.com/mmcdole/gofeed/v2/pkg/parsers/rss"
-	"github.com/mmcdole/gofeed/v2/pkg/parsers/universal"
+	"github.com/mmcdole/gofeed/v2/parsers/atom"
+	"github.com/mmcdole/gofeed/v2/parsers/rss"
+	"github.com/mmcdole/gofeed/v2/parsers/universal"
 )
 
 func main() {
