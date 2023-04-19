@@ -95,9 +95,12 @@ The Universal Parser, `gofeed.Parser`, is designed to automatically detect the f
 
 The process can be summarized in the following steps:
 
-1. **Feed type detection**: The Universal Parser analyzes the provided feed content and identifies its type (RSS, Atom, or JSON) based on the structure and elements present.
-2. **Feed specific parsing**: Once the feed type is determined, the corresponding feed-specific parser (`rss.Parser`, `atom.Parser`, or `json.Parser`) is used to parse the content.
-3. **Feed Conversion**: After parsing, the data is converted into a common format, making it easy to work with, regardless of the original feed type.
+| Stage                 | Description                                                                                                                                            |
+|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Feed Type Detection**   | The Universal Parser analyzes the provided feed content and identifies its type (RSS, Atom, or JSON) based on the structure and elements present.      |
+| **Feed Specific Parsing** | Once the feed type is determined, the corresponding feed-specific parser (`rss.Parser`, `atom.Parser`, or `json.Parser`) is used to parse the content. |
+| **Feed Conversion**       | After parsing, the data is converted into a common format, making it easy to work with, regardless of the original feed type.             
+
 
 This process ensures that the Universal Parser can handle a wide variety of feed types and present the data in a consistent and unified format, simplifying the process for developers.
 
@@ -161,7 +164,59 @@ fmt.Println(jsonFeed.HomePageURL)
 
 ### Extensions
 
+In Gofeed, elements that are not part of the default namespace of the feed or custom elements and tags not included in the feed specification are considered extensions. By default, these elements are parsed as extensions with the "Custom" namespace and stored in a tree-like structure located at Feed.Extensions and Item.Extensions. This structure allows you to access and read any custom extension elements or non-standard tags conveniently.
+
+In addition to the generic handling of extensions and non-standard tags, Gofeed also includes built-in support for parsing certain popular extensions into dedicated structs. This makes it more convenient to access these extensions and their fields. Currently, Gofeed supports the Dublin Core and Apple iTunes extensions. You can access these extensions at Feed.DublinCoreExt, Feed.ITunesExt, Item.DublinCoreExt, and Item.ITunesExt.
+
 ### Parsing Strictness
+
+The Gofeed library is designed to be as permissive as possible when parsing feeds by default. This means that it attempts to parse and process feeds, even if they contain invalid or non-standard elements. However, you can configure the library to be reject feeds with the following issues:
+
+* Unescaped/Naked Markup in feed elements
+* Undeclared namespace prefixes
+* Missing closing tags on certain elements
+* Illegal tags within feed elements without namespace prefixes
+* Missing "required" elements as specified by the respective feed specs.
+* Incorrect date formats
+
+In the following example, a new instance of ParseOptions is created with custom strictness settings. The strictness settings are set within the StrictnessOptions field of the ParseOptions struct.
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"github.com/mmcdole/gofeed"
+)
+
+func main() {
+	// Instantiate a new Gofeed parser
+	parser := gofeed.NewParser()
+
+	// Create a custom ParseOptions struct with strictness settings
+	options := gofeed.NewParseOptions()
+	options.StrictnessOptions = gofeed.StrictnessOptions{
+		StripInvalidCharacters:        false,
+		AutoCloseTags:                 false,
+		AllowUndisclosedXMLNamespaces: false,
+		AllowCustomXMLElements:        false,
+		AllowIncorrectDateFormats:     false,
+		AllowUnescapedMarkup:          false,
+	}
+
+	// Provide an io.Reader with the feed data
+	file, _ := os.Open("/path/to/a/file.xml")
+	defer file.Close()
+
+	// Parse the feed with custom options
+	feed, err := parser.ParseWithOptions(file, options)
+	if err != nil {
+		fmt.Println("Error parsing feed:", err)
+		return
+	}
+}
+```
 
 ## Credits
 
